@@ -1,0 +1,80 @@
+@page "/signup"
+@using  app.Services ;
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+@inject UserServiceFront UserServiceFront
+
+
+<PageTitle>Sign Up</PageTitle>
+<link href="css/signup.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/5d72166fb5.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+ <div id="main-content" class="main-content">
+        <div class="sec1">
+            <div class="logo"><img src="/images/logo.png" width="500px"></div>
+        </div>
+        <div class="sec2">
+            <div class="header">
+                <ul>
+                    <li>Help</li>
+                    <li>About</li>
+                </ul>
+            </div>
+            <div id="auth-section" class="auth">
+                    <div class="head1">SIGN UP</div>
+                    <form @onsubmit="HandleSignup">
+                    <div class="input">
+                        <div class="form-group">
+                            <input id="pseudo" type="text" class="form-control" placeholder="Enter your username"
+                                @bind="NewUser.Pseudo" required />
+                        </div>
+                        <div class="form-group">
+                            <input id="password" type="password" class="form-control" placeholder="Enter your password"
+                                @bind="NewUser.Password" required />
+                        </div>
+                        <div class="form-group">
+                            <select id="role" class="form-control" @bind="NewUser.Role">
+                                <option value="User">User</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                        <div class="form-check">
+                            <input id="terms" type="checkbox" class="form-check-input" required />
+                            <label for="terms" class="form-check-label">
+                                I agree to the <a href="#">Terms & Conditions</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                    </form>
+                    <p class="text-center mt-3">
+                        Already have an account? <a href="/Login">Login</a>
+                    </p>
+                </div>
+            </div>
+</div>
+@code {
+   private UserCreation NewUser { get; set; } = new UserCreation();
+
+private async Task HandleSignup()
+{
+    try
+    {
+        var createdUser = await UserServiceFront.CreateUserAsync(NewUser);
+
+        if (createdUser != null)
+        {
+            Console.WriteLine("Utilisateur créé avec succès.");
+            Navigation.NavigateTo("/login"); // Redirection vers la page de connexion
+        }
+        else
+        {
+            Console.WriteLine("Échec de la création de l'utilisateur.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erreur lors de l'inscription : {ex.Message}");
+    }
+}
+}

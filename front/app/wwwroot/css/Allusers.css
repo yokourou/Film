@@ -1,0 +1,131 @@
+body {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: #ecf0f1;
+}
+/* Style général du header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: #1e293b;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+/* Liens de navigation */
+.nav-links {
+  display: flex;
+  gap: 15px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  position: relative;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 15px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.nav-links a:hover {
+  background: #64748b;
+  border-radius: 8px;
+}
+
+/* Boutons */
+#btn2 {
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+  text-align: center;
+}
+
+#btn2 {
+  background: #f87171;
+  color: white;
+}
+
+#btn2:hover {
+  background: #ef4444;
+}
+
+/* titre Mes Favoris*/
+
+/* Conteneur du titre */
+.page-header {
+  text-align: center; /* Centrer le titre */
+  width: 50%;
+  margin: 30px auto;
+  /* margin-bottom: 30px; 
+  margin-top: 30px; */
+  padding: 20px;
+  background: linear-gradient(135deg, #b4182d, #54162b);
+  color: white; /* Couleur du texte */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre douce */
+}
+
+/* Titre */
+.page-header h3 {
+  font-size: 2rem; /* Augmenter la taille du titre */
+  font-weight: 600;
+  letter-spacing: 1px; /* Espacement des lettres */
+  text-transform: uppercase; /* Mettre en majuscule */
+  /* Supprimer la marge par défaut */
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.user-card {
+  background: linear-gradient(135deg, #54162b, #b4182d);
+  color: #2c3e50;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.user-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.user-details {
+  padding: 20px;
+  text-align: left; /* Alignement à gauche pour un rendu propre */
+  font-family: "Arial", sans-serif;
+}
+
+.user-details div {
+  margin-bottom: 10px;
+}
+
+.user-details h3 {
+  display: inline-block;
+  margin: 0;
+  font-size: 30px;
+  font-weight: bold;
+  color: #ebd9d9;
+}
+
+.user-details h4 {
+  display: inline-block;
+  margin: 0;
+  font-size: 25px;
+  color: #ebedee;
+}

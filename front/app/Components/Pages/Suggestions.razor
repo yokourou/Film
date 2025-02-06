@@ -1,0 +1,179 @@
+@* @page "/suggestions"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using app.Models
+@using app.Models.app.Models
+@inject RecommendationServicefront RecommendationServiceFront
+@inject AuthenticationStateProvider AuthStateProvider
+
+<link href="css/Suggestions.css" rel="stylesheet" />
+
+<h3>Vos Suggestions de Films</h3>
+
+@if (IsLoading)
+{
+    <p>Chargement des suggestions...</p>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p class="text-danger">@ErrorMessage</p>
+}
+else if (Recommendations == null || !Recommendations.Any())
+{
+    <p>Aucune recommandation disponible.</p>
+}
+else
+{
+    <div class="film-grid">
+        @foreach (var rec in Recommendations)
+        {
+            <div class="film-card">
+                <img src="@rec.Poster" alt="@rec.FilmTitle" class="film-poster" />
+                <div class="film-details">
+                    <h3>@rec.FilmTitle</h3>
+                    <p><strong>Genre :</strong> @(string.IsNullOrEmpty(rec.Genre) ? "Non spécifié" : rec.Genre)</p>
+                    <p><strong>Score :</strong> @rec.Score.ToString("0.00")</p>
+                    <a href="https://www.imdb.com/title/@rec.FilmId" target="_blank" class="btn btn-secondary">Voir sur IMDb</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private int CurrentUserId;
+    private List<RecommendationResult> Recommendations { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Récupérer l'état d'authentification pour extraire l'ID de l'utilisateur
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                // Essayer de récupérer l'ID de l'utilisateur via le claim NameIdentifier ou "sub"
+                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier) ?? user.FindFirst("sub");
+                if (userIdClaim == null)
+                {
+                    ErrorMessage = "User ID not found in token.";
+                    return;
+                }
+
+                if (!int.TryParse(userIdClaim.Value, out CurrentUserId))
+                {
+                    ErrorMessage = "Invalid user ID found in token.";
+                    return;
+                }
+
+                // Appeler l'API pour récupérer les recommandations
+                Recommendations = await RecommendationServiceFront.GetRecommendationsAsync((uint)CurrentUserId);
+            }
+            else
+            {
+                ErrorMessage = "Vous devez être connecté pour voir les suggestions.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Une erreur est survenue : {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
+
+ *@
+
+@page "/suggestions"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using app.Models
+@using app.Models.app.Models
+@using app.Services
+@inject RecommendationServicefront RecommendationServiceFront
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>Suggestions</PageTitle>
+<link href="css/Favoris.css" rel="stylesheet" />
+
+<header class="header">
+    <div class="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <h1>🎥 MyFilm</h1>
+        </a>
+    </div>
+    <nav class="navigation">
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/films">Films</a></li>
+            <li><a href="/favorites">Favoris</a></li>
+            <li><a href="/Allusers">Utilisateurs</a></li>
+            <li><a href="/logout" id="btn2">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="page-header">
+    <h3>Vos Suggestions de Films</h3>
+</div>
+
+@if (!_isLogged)
+{
+    <p>Veuillez vous connecter pour voir vos suggestions.</p>
+}
+else if (Recommendations == null || !Recommendations.Any())
+{
+    <p>Aucune recommandation disponible.</p>
+}
+else
+{
+    <div class="film-grid">
+        @foreach (var rec in Recommendations)
+        {
+            <div class="film-card">
+                <img src="@rec.Poster" alt="@rec.FilmTitle" class="film-poster" />
+                <div class="film-details">
+                    <h3>@rec.FilmTitle @(string.IsNullOrEmpty(rec.Year) ? "" : $"({rec.Year})")</h3>
+                    <p>@(string.IsNullOrEmpty(rec.Genre) ? "Non spécifié" : rec.Genre)</p>
+                    <p><strong>Score :</strong> @rec.Score.ToString("0.00")</p>
+                    <a href="https://www.imdb.com/title/@rec.FilmId" target="_blank" class="btn btn-secondary">Voir sur IMDb</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _isLogged = false;
+    private int CurrentUserId;
+    private List<RecommendationResult> Recommendations { get; set; } = new();
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _isLogged = true;
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier) ?? user.FindFirst("sub");
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out CurrentUserId))
+            {
+                ErrorMessage = "Impossible de récupérer l'ID utilisateur.";
+                return;
+            }
+
+            Recommendations = await RecommendationServiceFront.GetRecommendationsAsync((uint)CurrentUserId);
+        }
+    }
+}

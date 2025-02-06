@@ -1,0 +1,437 @@
+@page "/omdb"
+@using Microsoft.AspNetCore.Authorization
+@inject OmdbService OmdbService
+@inject FavouriteService FavouriteService
+@inject NavigationManager NavigationManager
+@using app.Models
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+<link href="css/Favoris.css" rel="stylesheet" />
+<header class="header">
+    <div class="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+        <h1>🎥 MyFilm</h1>
+        </a>
+    </div>
+    <nav class="navigation">
+        <div class="user-greeting">
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/films">Films</a></li>
+            <li><a href="/favorites">Favoris</a></li>
+            <li><a href="/Allusers">Utilisateurs</a></li>
+            <li><a href="/suggestions">Suggestions</a></li>
+            <li><a href="/logout" id="btn2">Logout</a></li>
+        </ul>
+        </div>
+    </nav>
+</header>
+
+<section class="search-section">
+    <div class="search-container">
+        <input type="text" @bind="SearchQuery" placeholder="Rechercher un film, un genre ou un réalisateur..." class="search-bar" />
+        <button class="btn btn-search" @onclick="SearchFilms" disabled="@IsLoading">🔍 Rechercher</button>
+    </div>
+
+    <div class="filters">
+        <select @bind="SelectedGenre" class="filter-dropdown">
+            <option value="">Tous les genres</option>
+            <option value="Action">Action</option>
+            <option value="Comédie">Comédie</option>
+            <option value="Drame">Drame</option>
+            <option value="Science-Fiction">Science-Fiction</option>
+        </select>
+        <input type="number" @bind="SelectedYear" placeholder="Année" class="filter-year" />
+    </div>
+</section>
+
+@if (IsLoading)
+{
+    <p class="loading-message">Recherche en cours...</p>
+}
+else if (FilmList == null)
+{
+    <p class="info-message">Utilisez la barre de recherche pour trouver des films.</p>
+}
+else if (!FilmList.Any())
+{
+    <p class="error-message">Aucun film trouvé pour : "@SearchQuery".</p>
+}
+else
+{
+    <section class="film-results">
+        <div class="film-grid">
+            @foreach (var film in FilteredFilms)
+            {
+                <div class="film-card">
+                    <img src="@film.Poster" alt="@film.Title" class="film-poster" />
+                    <div class="film-details">
+                        <h3>@film.Title</h3>
+                        <p>@film.Year</p>
+                        <button id="btn4" @onclick="() => ImportFilm(film)">Importer</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (Suggestions.Any())
+{
+    <section class="suggestions">
+        <h2>Suggestions Populaires</h2>
+        <div class="suggestion-grid">
+            @foreach (var suggestion in Suggestions)
+            {
+                <div class="suggestion-card">
+                    <img src="@suggestion.Poster" alt="@suggestion.Title" class="suggestion-poster" />
+                    <div class="suggestion-details">
+                        <h3>@suggestion.Title</h3>
+                        <p>Année : @suggestion.Year</p>
+                        <p>Genre : @suggestion.Genre</p>
+                        <button class="btn btn-view-details" @onclick="() => ViewDetails(suggestion.ImdbId)">Voir Détails</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<footer class="footer">
+    <p>&copy; 2025 MyFilm. Tous droits réservés.</p>
+    <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+</footer>
+
+@code {
+    private string SearchQuery = string.Empty;
+    private string SelectedGenre = string.Empty;
+    private int? SelectedYear = null;
+    private List<OmdbFilm> FilmList = new();
+    private List<OmdbFilm> Suggestions = new();
+    private bool IsLoading = false;
+    private string UserFeedbackMessage = string.Empty;
+
+    private List<OmdbFilm> FilteredFilms => FilmList
+        .Where(f => string.IsNullOrEmpty(SelectedGenre) || (f.Genre?.Contains(SelectedGenre, StringComparison.OrdinalIgnoreCase) ?? false))
+        .Where(f => !SelectedYear.HasValue || f.Year == SelectedYear.ToString())
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSuggestionsAsync();
+    }
+
+    private async Task LoadSuggestionsAsync()
+    {
+        try
+        {
+            Suggestions = await OmdbService.LoadSuggestionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading suggestions: {ex.Message}");
+            UserFeedbackMessage = "Erreur lors du chargement des suggestions.";
+        }
+    }
+
+    private async Task SearchFilms()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            UserFeedbackMessage = "Veuillez entrer un titre valide.";
+            return;
+        }
+
+        IsLoading = true;
+
+        try
+        {
+            FilmList = await OmdbService.SearchByTitleAsync(SearchQuery);
+            UserFeedbackMessage = FilmList.Any() ? $"Résultats pour : {SearchQuery}" : $"Aucun résultat trouvé pour : {SearchQuery}.";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la recherche : {ex.Message}");
+            UserFeedbackMessage = "Erreur lors de la recherche.";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+   private string? statusMessage;
+
+    private async Task ImportFilm(OmdbFilm film)
+    {
+        statusMessage = null;
+
+        if (film == null || string.IsNullOrWhiteSpace(film.ImdbId))
+        {
+            statusMessage = "❌ Film invalide.";
+            return;
+        }
+
+        statusMessage = await OmdbService.ImportFilmAsync(film.ImdbId);
+    }
+
+    private void ViewDetails(string imdbId)
+    {
+        NavigationManager.NavigateTo($"https://www.imdb.com/title/{imdbId}", true);
+    }
+}
+
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Header */
+.header {
+    background-color: #212529;
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.navigation a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.btn-profile {
+    background-color: #ffc107;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+/* Search Section */
+@* .search-section {
+    padding: 20px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.search-bar {
+    width: 50%;
+    padding: 10px;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.filters {
+    margin-top: 20px;
+}
+
+.filter-dropdown, .filter-year {
+    margin: 0 10px;
+    padding: 10px;
+    font-size: 1em;
+} *@
+.search-section {
+    padding: 20px;
+    background: linear-gradient(65deg, #54162b, #b4182d);
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+.btn-search {
+    margin-left: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-search:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+.btn-search:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.filters {
+    padding: 15px;
+    background: linear-gradient(65deg, #54162b, #b4182d);
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.filter-dropdown,
+.filter-year {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-dropdown:focus,
+.filter-year:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+
+
+
+
+
+
+
+/* Film Results */
+.film-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.film-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.film-card:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+}
+
+.film-poster {
+    width: 100%;
+    height: auto;
+}
+
+/* Suggestions */
+.suggestions {
+    padding: 20px;
+    background-color: #54162b;
+    
+}
+
+.suggestions h2 {
+    text-align: center;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.suggestion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    justify-items: center;
+    padding: 10px;
+}
+
+.suggestion-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 200px;
+}
+
+.suggestion-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-poster {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.suggestion-details h3 {
+    font-size: 1.2em;
+    margin: 10px 0 5px;
+    color: #212529;
+}
+
+.suggestion-details p {
+    font-size: 0.9em;
+    color: #555;
+    margin: 5px 0;
+}
+
+.btn-view-details {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.btn-view-details:hover {
+    background-color: #0056b3;
+}
+
+
+</style>

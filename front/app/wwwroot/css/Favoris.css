@@ -1,0 +1,203 @@
+body {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: #ecf0f1;
+}
+/* --- Header --- */
+/* Style général du header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: #1e293b;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+/* Liens de navigation */
+.nav-links {
+  display: flex;
+  gap: 15px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  position: relative;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 15px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.nav-links a:hover {
+  background: #64748b;
+  border-radius: 8px;
+}
+
+/* Boutons */
+
+#btn2 {
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+  text-align: center;
+}
+
+#btn2 {
+  background: #f87171;
+  color: white;
+}
+
+#btn2:hover {
+  background: #ef4444;
+}
+/* titre Mes Favoris*/
+
+/* Conteneur du titre */
+.page-header {
+  text-align: center; /* Centrer le titre */
+  width: 50%;
+  margin: 20px auto;
+  padding: 20px;
+  background: linear-gradient(
+    15deg,
+    #54162b,
+    #b4182d
+  ); /* Couleur de fond moderne */
+  color: white; /* Couleur du texte */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre douce */
+}
+
+/* Titre */
+.page-header h3 {
+  font-size: 2rem; /* Augmenter la taille du titre */
+  font-weight: 600;
+  letter-spacing: 1px; /* Espacement des lettres */
+  text-transform: uppercase; /* Mettre en majuscule */
+  /* Supprimer la marge par défaut */
+}
+
+/******************************************/
+
+.film-grid {
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.film-card {
+  background: linear-gradient(65deg, #54162b, #b4182d);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding: 15px;
+  width: 250px;
+  transition: transform 0.3s ease;
+  margin-left: 20%;
+}
+
+.film-card:hover {
+  transform: scale(1.05);
+}
+
+.film-poster {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.film-details {
+  text-align: center;
+  color: #ecf0f1;
+  margin-bottom: 15px;
+}
+
+.film-details h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #f1c40f;
+}
+
+.film-details p {
+  font-size: 0.9rem;
+  margin: 5px 0;
+  color: #bdc3c7;
+}
+
+.film-details p:last-child {
+  font-style: italic;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-secondary {
+  background-color: #f39c12;
+  color: #fff;
+  border: 2px solid #f39c12;
+}
+
+.btn-secondary:hover {
+  background-color: #e67e22;
+}
+
+.btn-primary {
+  background-color: #e74c3c;
+  color: #fff;
+  border: 2px solid #e74c3c;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background-color: #c0392b;
+}
+
+#btn4 {
+  background: #cfcf11;
+  color: white;
+  font-size: 1rem; /* Taille du texte */
+  font-weight: bold; /* Texte en gras */
+  padding: 10px 20px; /* Espacement interne */
+  border: none; /* Supprime les bordures */
+  border-radius: 8px; /* Bordures arrondies */
+  cursor: pointer; /* Curseur pointeur pour un bouton */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+  transition: background 0.3s ease, transform 0.2s ease; /* Transitions fluides */
+}
+
+#btn4:hover {
+  background: #d8d505; /* Couleur survol */
+  transform: scale(1.05); /* Légère mise en avant */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Ombre plus forte */
+}
+
+#btn4:active {
+  background: #11b00b; /* Couleur enfoncée */
+  transform: scale(0.98); /* Légère réduction pour effet de clic */
+}

@@ -1,0 +1,121 @@
+@page "/favorites"
+@* @attribute [Authorize] *@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims;
+@inject AuthenticationStateProvider AuthStateProvider
+@inject FilmService FilmService
+@inject NavigationManager NavigationManager
+@inject FavouriteService FavouriteService
+@using app.Services
+@using app.Models
+<PageTitle>Favoris</PageTitle>
+<link href="css/Favoris.css" rel="stylesheet" />
+<header class="header">
+    <div class="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+        <h1>🎥 MyFilm</h1>
+        </a>
+    </div>
+    <nav class="navigation">
+        <div class="user-greeting">
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/films">Films</a></li>
+            <li><a href="/Allusers">Utilisateurs</a></li>
+            <li><a href="/suggestions">Suggestions</a></li>
+            <li><a href="/logout" id="btn2">Logout</a></li>
+        </ul>
+        </div>
+    </nav>
+</header>
+<div class="page-header">
+    <h3>Mes Favoris</h3>
+</div>
+
+@if (!_isLogged)
+{
+    <p>Veuillez vous connecter pour voir vos favoris.</p>
+}
+else if (favouriteFilms == null || !favouriteFilms.Any())
+{
+    <p>Aucun favori trouvé.</p>
+}
+else
+{
+    <div class="film-grid">
+        @foreach (var film in favouriteFilms)
+        {
+            <div class="film-card">
+                <img src="@film.Poster" alt="@film.Name" class="film-poster" />
+                <div class="film-details">
+                    <h3>@film.Name (@film.Year)</h3>
+                    <p>@(string.IsNullOrEmpty(film.Genre) ? "Non spécifié" : film.Genre)</p>
+                    <a href="https://www.imdb.com/title/@film.Imdb" target="_blank" class="btn btn-secondary">Voir sur IMDb</a>
+                </div>
+                <button class="btn btn-primary" @onclick="() => SupprimerFavourites(film.Id)">
+                        Supprimer
+                </button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _isLogged = false;
+    private List<Favourite> favourites = new();
+    private List<Film> favouriteFilms = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _isLogged = true;
+            favourites = await FavouriteService.GetFavouritesAsync();
+
+            // Charger les détails des films associés
+            foreach (var favourite in favourites)
+            {
+                var film = await FilmService.GetFilmByIdAsync(favourite.Id);
+                if (film != null)
+                {
+                    favouriteFilms.Add(film);
+                }
+            }
+        }
+    }
+
+    private async Task SupprimerFavourites(int filmId)
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+             if (user.Identity?.IsAuthenticated ?? false)
+             {
+
+                var success = await FavouriteService.SupprimerFavouriteAsync(filmId);
+                if (success)
+                {
+                    Console.WriteLine($"Film {filmId} Supprimer des favoris .");
+                    FavouriteService.NavigateTo("/favorites");
+                }
+             }
+            else
+            {
+                Console.WriteLine($"Erreur lors de la suppression du film {filmId} aux favoris.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'ajout aux favoris : {ex.Message}");
+        }
+    }
+
+}
+
+
+

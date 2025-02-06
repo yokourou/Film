@@ -1,0 +1,70 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">app</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="films">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Film
+            </NavLink>
+        </div>
+        @if (IsAdmin)
+        {
+       <div class="nav-item px-3">
+            <NavLink class="nav-link" href="omdb">
+                <span class="bi bi-camera-reels"></span> OMDb
+            </NavLink>
+        </div>
+        }
+         <div class="nav-item px-3">
+            <NavLink class="nav-link" href="favorites">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> favorites
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="suggest">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> suggest
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Allusers">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Utilisateurs
+            </NavLink>
+        </div>
+        
+    </nav>
+</div>
+@code {
+    private bool IsAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Vérifie si l'utilisateur a le rôle Admin
+        IsAdmin = await IsUserInRoleAsync("Admin");
+    }
+
+    private async Task<bool> IsUserInRoleAsync(string role)
+    {
+       var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        string roleName = role.ToString(); // Convertir en chaîne
+        return user.IsInRole(roleName);    // Vérifie si l'utilisateur a ce rôle
+    }
+}
+

@@ -1,0 +1,38 @@
+@* <div class="film-card"> 
+    <img src="@Image" alt="@Title" />
+    <h3>@Title</h3>
+    <p>Année : @Year</p>
+    <button @onclick="AddToFavorites">Ajouter aux favoris</button>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public int Year { get; set; }
+    [Parameter] public string Image { get; set; }
+    [Parameter] public EventCallback<Film> OnAddToFavorites { get; set; }
+
+    private void AddToFavorites() 
+        => OnAddToFavorites.InvokeAsync(new Film { Title = Title, Year = Year, Image = Image });
+} *@
+
+<div class="film-card">
+    <img src="@Poster" alt="@Name" />
+    <h3>@Name</h3>
+    <p>Année : @Year</p>
+    <button @onclick="AddToFavorites">Ajouter aux favoris</button>
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; }
+    [Parameter] public string Year { get; set; }
+    [Parameter] public string Poster { get; set; }
+    [Parameter] public EventCallback<Film> OnAddToFavorites { get; set; }
+
+    private void AddToFavorites() => OnAddToFavorites.InvokeAsync(new Film
+    {
+        Name = Name,
+        Year = Year,
+        Poster = Poster
+    });
+}
+

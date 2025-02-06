@@ -1,0 +1,73 @@
+@page "/Allusers"
+@using Microsoft.AspNetCore.Components.Authorization
+@using app.Models
+@using app.Services
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserServiceFront UserService
+<PageTitle>Utilisateurs</PageTitle>
+<link href="css/Allusers.css" rel="stylesheet" />
+<header class="header">
+    <div class="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+        <h1>🎥 MyFilm</h1>
+        </a>
+    </div>
+    <nav class="navigation">
+        <div class="user-greeting">
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/films">Films</a></li>
+            <li><a href="/favorites">Favoris</a></li>
+            <li><a href="/suggestions">Suggestions</a></li>
+            <li><a href="/logout" id="btn2">Logout</a></li>
+        </ul>
+        </div>
+    </nav>
+</header>
+<div class="page-header">
+    <h3>Utilisateurs</h3>
+</div>
+
+@if (!_isLogged)
+{
+    <p>Veuillez vous connecter pour voir Les Utilisateurs .</p>
+}
+else if (users == null || !users.Any())
+{
+    <p>Aucun utilisateur trouvé.</p>
+}
+else
+{
+    <div class="user-grid">
+        @foreach (var user in users)
+        {
+            <div class="user-card">
+                <div class="user-details">
+                    <h3>Pseudo :</h3><h4>@user.Pseudo</h4><br>
+                    <h3>Id     :</h3><h4>@user.Id </h4><br>
+                    <h3>Role   :</h3> <h4>@user.Role</h4>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
+@code{
+    private bool _isLogged = false;
+    private List<User> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _isLogged = true;
+            users = await UserService.GetUsersTotalAsync();
+        }
+    }
+
+}

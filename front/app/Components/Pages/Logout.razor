@@ -1,0 +1,15 @@
+@page "/logout"
+@using Microsoft.AspNetCore.Components.Authorization; 
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject UserServiceFront UserService
+@inject AuthenticationStateProvider AuthStateProvider
+
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        await ((CustomStateAuthProvider)AuthStateProvider).MarkUserAsLoggedOut();
+        UserService.NavigateToHomeAndReload();
+    }
+}

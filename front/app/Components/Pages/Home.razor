@@ -1,0 +1,142 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+<PageTitle>Accueil</PageTitle>
+<link href="css/Home.css" rel="stylesheet" />
+<header class="header">
+    <div class="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+        <h1>🎥 MyFilm</h1>
+        </a>
+    </div>
+    <nav class="navigation">
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/films">Films</a></li>
+            @if(isUserAuthenticated && isAdmin)
+            {
+                <li><a href="/omdb">omdb</a></li>
+            }
+            <li><a href="/favorites">Favoris</a></li>
+            <li><a href="/Allusers">Utilisateurs</a></li>
+            <li><a href="/suggestions">Suggestions</a></li>
+            <li><a href="/Login" id="btn1">Connexion</a></li>
+            <li><a href="/logout" id="btn2">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+@if (!isUserAuthenticated)
+{
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Explorez et gérez vos films préférés</h2>
+            <p>Découvrez de nouveaux films, créez votre collection personnalisée, et organisez vos favoris en un clic.</p>
+            <div class="cta-buttons">
+                <a href="/Signup" class="btn btn-success">Inscription</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="images/hero-image.png" alt="Bibliothèque virtuelle de films" />
+        </div>
+    </section>
+}
+else
+{
+    <AuthorizeView>
+        <Authorized>
+            <section class="hero">
+                <div class="hero-content">
+                 <div class="welcome-container">
+                <div class="avatar">
+                    <img src="images/animated-avatar.gif" alt="Avatar animé" />
+                </div>
+                <div class="welcome-message">
+                    Bienvenue, <span class="username">@context.User.Identity?.Name !</span>
+                </div>
+            </div>
+                </div>
+                <div class="hero-image">
+                    <img src="images/hero-image2.png" alt="Bibliothèque virtuelle de films" />
+                </div>
+            </section>
+
+        
+        </Authorized>
+    </AuthorizeView>
+}
+
+
+<section class="features">
+    <h3 class="section-title">Pourquoi choisir MyFilm ?</h3>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <img src="images/organize-icon.png" alt="Organiser" />
+            <h4>Organiser facilement vos films</h4>
+            <p>Catégorisez et triez vos films préférés en un seul endroit.</p>
+        </div>
+        <div class="feature-item">
+            <img src="images/favorites-icon.png" alt="Favoris" />
+            <h4>Créer des listes personnalisées</h4>
+            <p>Gardez vos films favoris toujours à portée de main.</p>
+        </div>
+        <div class="feature-item">
+            <img src="images/track-icon.png" alt="Suivi" />
+            <h4>Suivre les films regardés</h4>
+            <p>Ne perdez jamais le fil de vos visionnages.</p>
+        </div>
+        <div class="feature-item">
+            <img src="images/modern-icon.png" alt="Interface" />
+            <h4>Interface moderne et intuitive</h4>
+            <p>Une expérience utilisateur pensée pour vous.</p>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials">
+    <h3 class="section-title">Ce que disent nos utilisateurs</h3>
+    <div class="testimonial-carousel">
+        <div class="testimonial-item">
+            <p>"MyFilm m'a permis de découvrir et d'organiser mes films préférés. Une plateforme incroyable !"</p>
+            <span>- Sarah, passionnée de cinéma</span>
+        </div>
+        <div class="testimonial-item">
+            <p>"Une interface intuitive et un design élégant. Je recommande vivement !"</p>
+            <span>- Paul, utilisateur satisfait</span>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <a href="/politique-de-confidentialite">Politique de confidentialité</a>
+    <a href="/conditions-generales">Conditions générales</a>
+    <a href="/support">Support</a>
+    <div class="footer-social">
+        <a href="#"><img src="images/facebook-icon.png" alt="Facebook" /></a>
+        <a href="#"><img src="images/twitter-icon.png" alt="Twitter" /></a>
+        <a href="#"><img src="images/instagram-icon.png" alt="Instagram" /></a>
+    </div>
+    <p>© 2025 MyFilm. Tous droits réservés.</p>
+</footer>
+
+
+
+@code {
+    private bool isUserAuthenticated;
+    private bool isAdmin;   
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isUserAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        isAdmin = await IsUserInRoleAsync("Admin");
+    }
+
+    private async Task<bool> IsUserInRoleAsync(string role)
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        return user.IsInRole(role);
+    }
+}
